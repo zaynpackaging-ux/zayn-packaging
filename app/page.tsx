@@ -1,14 +1,33 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-
+// Komponen UI Stand-alone (Pengganti Folder UI)
+const Card = ({ children, className = "" }: any) => <div className={`bg-white rounded-lg border shadow-sm p-4 ${className}`}>{children}</div>;
+const CardHeader = ({ children, className = "" }: any) => <div className={`mb-3 pb-2 border-b ${className}`}>{children}</div>;
+const CardTitle = ({ children, className = "" }: any) => <h3 className={`text-lg font-bold text-gray-800 ${className}`}>{children}</h3>;
+const CardContent = ({ children, className = "" }: any) => <div className={`${className}`}>{children}</div>;
+const Button = ({ children, onClick, className = "", type = "button" }: any) => (
+  <button type={type} onClick={onClick} className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium text-sm ${className}`}>{children}</button>
+);
+const Input = (props: any) => <input {...props} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${props.className || ""}`} />;
+const Badge = ({ children, className = "" }: any) => <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 ${className}`}>{children}</span>;
+const Tabs = ({ children }: any) => <div>{children}</div>;
+const TabsList = ({ children, className = "" }: any) => <div className={`flex space-x-2 border-b mb-4 pb-2 ${className}`}>{children}</div>;
+const TabsTrigger = ({ children, onClick, active }: any) => (
+  <button onClick={onClick} className={`px-3 py-1.5 text-sm font-medium rounded-md ${active ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{children}</button>
+);
+const TabsContent = ({ children, active }: any) => active ? <div>{children}</div> : null;
+const Table = ({ children, className = "" }: any) => <table className={`w-full border-collapse text-left text-sm ${className}`}>{children}</table>;
+const TableBody = ({ children }: any) => <tbody>{children}</tbody>;
+const TableCell = ({ children, className = "" }: any) => <td className={`p-2 border-b ${className}`}>{children}</td>;
+const TableHead = ({ children, className = "" }: any) => <th className={`p-2 border-b bg-gray-50 font-semibold text-gray-700 ${className}`}>{children}</th>;
+const TableHeader = ({ children }: any) => <thead>{children}</thead>;
+const TableRow = ({ children }: any) => <tr className="hover:bg-gray-50">{children}</tr>;
+const Dialog = ({ children, open }: any) => open ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">{children}</div> : null;
+const DialogContent = ({ children, className = "" }: any) => <div className={`bg-white rounded-lg p-6 max-w-lg w-full shadow-lg ${className}`}>{children}</div>;
+const DialogHeader = ({ children }: any) => <div className="mb-4">{children}</div>;
+const DialogTitle = ({ children }: any) => <h2 className="text-xl font-bold">{children}</h2>;
+const DialogTrigger = ({ children }: any) => <>{children}</>;
 export default function ZaynERPDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [todayDateString, setTodayDateString] = useState("");
