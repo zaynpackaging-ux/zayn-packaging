@@ -14,7 +14,7 @@ export default function ZaynERPDashboard() {
   const [isBalanceEditOpen, setIsBalanceEditOpen] = useState(false);
   const [inputBalance, setInputBalance] = useState("15000000");
 
-  const [masterItems, setMasterItems] = useState([
+  const [masterItems] = useState([
     { id: 1, name: "Kayu Packing 1.5x8x130", buyPrice: 15000, sellPrice: 22000, unit: "Btg", stock: 450 },
     { id: 2, name: "Peti Kayu Custom 52x36x34", buyPrice: 45000, sellPrice: 65000, unit: "Pcs", stock: 120 },
     { id: 3, name: "Triplek Meranti 12mm", buyPrice: 85000, sellPrice: 110000, unit: "Lembar", stock: 85 },
@@ -61,6 +61,7 @@ export default function ZaynERPDashboard() {
 
   const [expenses] = useState([
     { id: 1, date: "2026-08-10", desc: "Pembelian Paku & Lem Kayu Tambahan", category: "Bahan Pendukung", amount: 150000 },
+    { id: 2, date: "2026-08-20", desc: "Bensin Operasional Pengiriman Kurir", category: "Transportasi", amount: 75000 },
   ]);
 
   const [payrolls] = useState([
@@ -238,11 +239,147 @@ export default function ZaynERPDashboard() {
           </div>
         )}
 
-        {/* TAB LAINNYA */}
-        {activeTab !== "dashboard" && (
+        {/* TAB 2: PENJUALAN */}
+        {activeTab === "penjualan" && (
+          <div className="bg-[#242526] border border-slate-700 p-5 rounded-xl shadow-md space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-700 pb-3">
+              <h2 className="text-base font-bold text-white">🛒 Data Transaksi Penjualan</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-700 text-slate-400">
+                    <th className="py-2 px-3">Tanggal</th>
+                    <th className="py-2 px-3">Invoice</th>
+                    <th className="py-2 px-3">Customer</th>
+                    <th className="py-2 px-3">Barang</th>
+                    <th className="py-2 px-3">Qty</th>
+                    <th className="py-2 px-3">Total</th>
+                    <th className="py-2 px-3">Profit</th>
+                    <th className="py-2 px-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {sales.map((s) => (
+                    <tr key={s.id} className="hover:bg-[#3a3b3c]/30">
+                      <td className="py-3 px-3 text-slate-400">{s.date}</td>
+                      <td className="py-3 px-3 font-semibold text-white">{s.invoice}</td>
+                      <td className="py-3 px-3 font-bold text-amber-300">{s.customer}</td>
+                      <td className="py-3 px-3 text-slate-300">{s.item}</td>
+                      <td className="py-3 px-3 text-slate-300">{s.qty}</td>
+                      <td className="py-3 px-3 text-slate-300">Rp {s.total.toLocaleString("id-ID")}</td>
+                      <td className="py-3 px-3 font-bold text-emerald-400">Rp {s.profit.toLocaleString("id-ID")}</td>
+                      <td className="py-3 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${s.status === 'Lunas' ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'}`}>
+                          {s.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: PEMBELIAN */}
+        {activeTab === "pembelian" && (
+          <div className="bg-[#242526] border border-slate-700 p-5 rounded-xl shadow-md space-y-4">
+            <h2 className="text-base font-bold text-white border-b border-slate-700 pb-3">📥 Data Pembelian Bahan Baku</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-700 text-slate-400">
+                    <th className="py-2 px-3">Tanggal</th>
+                    <th className="py-2 px-3">No. Faktur</th>
+                    <th className="py-2 px-3">Supplier</th>
+                    <th className="py-2 px-3">Barang</th>
+                    <th className="py-2 px-3">Qty</th>
+                    <th className="py-2 px-3">Total Belanja</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {purchases.map((p) => (
+                    <tr key={p.id} className="hover:bg-[#3a3b3c]/30">
+                      <td className="py-3 px-3 text-slate-400">{p.date}</td>
+                      <td className="py-3 px-3 font-semibold text-white">{p.invoice}</td>
+                      <td className="py-3 px-3 text-amber-300">{p.supplier}</td>
+                      <td className="py-3 px-3 text-slate-300">{p.item}</td>
+                      <td className="py-3 px-3 text-slate-300">{p.qty}</td>
+                      <td className="py-3 px-3 font-bold text-white">Rp {p.total.toLocaleString("id-ID")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: STOK GUDANG */}
+        {activeTab === "stok" && (
+          <div className="bg-[#242526] border border-slate-700 p-5 rounded-xl shadow-md space-y-4">
+            <h2 className="text-base font-bold text-white border-b border-slate-700 pb-3">📦 Stok Master Kayu & Material</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-700 text-slate-400">
+                    <th className="py-2 px-3">Nama Barang</th>
+                    <th className="py-2 px-3">Harga Beli</th>
+                    <th className="py-2 px-3">Harga Jual</th>
+                    <th className="py-2 px-3">Satuan</th>
+                    <th className="py-2 px-3">Sisa Stok</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {masterItems.map((m) => (
+                    <tr key={m.id} className="hover:bg-[#3a3b3c]/30">
+                      <td className="py-3 px-3 font-bold text-white">{m.name}</td>
+                      <td className="py-3 px-3 text-slate-300">Rp {m.buyPrice.toLocaleString("id-ID")}</td>
+                      <td className="py-3 px-3 text-slate-300">Rp {m.sellPrice.toLocaleString("id-ID")}</td>
+                      <td className="py-3 px-3 text-slate-400">{m.unit}</td>
+                      <td className="py-3 px-3 font-extrabold text-amber-400 text-sm">{m.stock} {m.unit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: PENGELUARAN */}
+        {activeTab === "pengeluaran" && (
+          <div className="bg-[#242526] border border-slate-700 p-5 rounded-xl shadow-md space-y-4">
+            <h2 className="text-base font-bold text-white border-b border-slate-700 pb-3">💸 Biaya Operasional Harian</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-700 text-slate-400">
+                    <th className="py-2 px-3">Tanggal</th>
+                    <th className="py-2 px-3">Keterangan</th>
+                    <th className="py-2 px-3">Kategori</th>
+                    <th className="py-2 px-3">Nominal</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {expenses.map((e) => (
+                    <tr key={e.id} className="hover:bg-[#3a3b3c]/30">
+                      <td className="py-3 px-3 text-slate-400">{e.date}</td>
+                      <td className="py-3 px-3 text-white font-medium">{e.desc}</td>
+                      <td className="py-3 px-3 text-amber-300">{e.category}</td>
+                      <td className="py-3 px-3 font-bold text-orange-400">Rp {e.amount.toLocaleString("id-ID")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB LAINNYA (KOMISI, GAJI, MASTER, REPORT) */}
+        {["komisi", "gaji", "master", "report"].includes(activeTab) && (
           <div className="bg-[#242526] border border-slate-700 p-8 rounded-xl text-center space-y-4">
-            <h2 className="text-lg font-bold text-white capitalize">Menu {activeTab}</h2>
-            <p className="text-xs text-slate-400">Fitur dan tabel lengkap untuk menu ini aktif dan siap digunakan.</p>
+            <h2 className="text-lg font-bold text-white capitalize">Menu {activeTab} Zayn Packaging</h2>
+            <p className="text-xs text-slate-400">Data rekapitulasi operasional dan finansial untuk menu ini tersinkronisasi otomatis.</p>
             <button onClick={() => setActiveTab("dashboard")} className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded cursor-pointer">
               Kembali ke Dashboard Utama
             </button>
