@@ -61,7 +61,7 @@ export default function DashboardZayn() {
   };
 
   const handleDelete = (id) => {
-    if (confirm('Yakin ingin menghapus transaksi ini? Saldo dan rumus akan dihitung ulang secara otomatis.')) {
+    if (confirm('Yakin ingin menghapus transaksi ini? Saldo akan dihitung ulang secara otomatis.')) {
       setSales(sales.filter(s => s.id !== id));
     }
   };
@@ -74,7 +74,7 @@ export default function DashboardZayn() {
       {/* HEADER */}
       <header style={{ backgroundColor: '#111827', border: '1px solid #1f2937', borderRadius: '16px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #f59e0b, #ea580c)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '24px', color: '#090d16', boxShadow: '0 8px 16px rgba(245,158,11,0.4)', transform: 'rotate(-3deg)' }}>
+          <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #f59e0b, #ea580c)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '28px', color: '#090d16', boxShadow: '0 8px 16px rgba(245,158,11,0.4)', transform: 'rotate(-3deg)' }}>
             📦
           </div>
           <div>
