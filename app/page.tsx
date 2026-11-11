@@ -1,392 +1,324 @@
-"use client";
+import React, { useState, useMemo } from 'react';
+import { 
+  PlusCircle, 
+  Pencil, 
+  Trash2, 
+  TrendingUp, 
+  DollarSign, 
+  AlertCircle, 
+  ShoppingBag, 
+  Receipt, 
+  Users, 
+  Wallet,
+  CheckCircle2,
+  PackageCheck
+} from 'lucide-react';
 
-import { useState, useEffect } from "react";
-
-export default function ZaynERPDashboard() {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [todayDateString, setTodayDateString] = useState("");
-
-  useEffect(() => {
-    setTodayDateString(new Date().toISOString().split('T')[0]);
-  }, []);
-
-  const [manualBalance, setManualBalance] = useState<number>(15000000);
-  const [isBalanceEditOpen, setIsBalanceEditOpen] = useState(false);
-  const [inputBalance, setInputBalance] = useState("15000000");
-
-  const [masterItems] = useState([
-    { id: 1, name: "Kayu Packing 1.5x8x130", buyPrice: 15000, sellPrice: 22000, unit: "Btg", stock: 450 },
-    { id: 2, name: "Peti Kayu Custom 52x36x34", buyPrice: 45000, sellPrice: 65000, unit: "Pcs", stock: 120 },
-    { id: 3, name: "Triplek Meranti 12mm", buyPrice: 85000, sellPrice: 110000, unit: "Lembar", stock: 85 },
-  ]);
-
+export default function DashboardZayn() {
+  // 1. STATE DATA TRANSAKSI
   const [sales, setSales] = useState([
-    { 
-      id: 1, 
-      date: "2026-08-12", 
-      invoice: "INV25", 
-      customer: "Agung Santoso", 
-      marketplace: "Direct / Offline", 
-      item: "Kayu Packing 1.5x8x130", 
-      qty: 100, 
-      sellPrice: 22000, 
-      total: 2200000, 
-      hpp: 1500000, 
-      profit: 700000, 
-      paid: 2200000, 
-      debt: 0, 
-      status: "Lunas" 
-    },
-    { 
-      id: 2, 
-      date: "2026-08-25", 
-      invoice: "INV26", 
-      customer: "Budi Jaya Proyek", 
-      marketplace: "WhatsApp", 
-      item: "Peti Kayu Custom 52x36x34", 
-      qty: 50, 
-      sellPrice: 65000, 
-      total: 3250000, 
-      hpp: 2250000, 
-      profit: 1000000, 
-      paid: 1000000, 
-      debt: 2250000, 
-      status: "Belum Lunas" 
-    },
+    { id: 1, customer: 'PT Mitra Mulia', item: 'Palet Kayu Custom', total: 4500000, status: 'Belum Lunas' },
+    { id: 2, customer: 'Toko Sumber Jaya', item: 'Bubble Column 50m', total: 1200000, status: 'Lunas' },
+    { id: 3, customer: 'CV Agung Logistik', item: 'Peti Kayu Ekspor', total: 3800000, status: 'Belum Lunas' }
   ]);
 
-  const [purchases] = useState([
-    { id: 1, date: "2026-08-15", invoice: "FAK-9901", supplier: "UD. Kayu Mandiri", item: "Kayu Packing 1.5x8x130", qty: 500, price: 15000, total: 7500000 },
-  ]);
+  const [expenses, setExpenses] = useState({
+    belanja: 3200000,
+    operasional: 1500000,
+    gaji: 2800000
+  });
 
-  const [expenses] = useState([
-    { id: 1, date: "2026-08-10", desc: "Pembelian Paku & Lem Kayu Tambahan", category: "Bahan Pendukung", amount: 150000 },
-    { id: 2, date: "2026-08-20", desc: "Bensin Operasional Pengiriman Kurir", category: "Transportasi", amount: 75000 },
-  ]);
+  // State Form Modal (Tambah/Edit)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState({ customer: '', item: '', total: '', status: 'Belum Lunas' });
 
-  const [payrolls] = useState([
-    { id: 1, date: "2026-08-31", employee: "Mas Andi", period: "Agustus 2026", basicSalary: 2000000, totalComm: 492000, allowance: 250000, totalPay: 2742000, status: "Sudah Dibayar" },
-  ]);
+  // 2. KALKULASI RUMUS OTOMATIS
+  const metrics = useMemo(() => {
+    const totalPenjualan = sales.reduce((acc, curr) => acc + Number(curr.total), 0);
+    const totalPiutang = sales.filter(s => s.status === 'Belum Lunas').reduce((acc, curr) => acc + Number(curr.total), 0);
+    const totalPenjualanLunas = sales.filter(s => s.status === 'Lunas').reduce((acc, curr) => acc + Number(curr.total), 0);
+    
+    const totalBelanja = expenses.belanja;
+    const biayaOperasional = expenses.operasional;
+    const totalGaji = expenses.gaji;
 
-  const handlePayDebt = (id: number) => { 
-    setSales(sales.map(s => s.id === id ? { ...s, paid: s.total, debt: 0, status: "Lunas" } : s)); 
+    const totalPengeluaran = totalBelanja + biayaOperasional + totalGaji;
+    const totalProfit = totalPenjualan - totalPengeluaran;
+    const saldoKas = totalPenjualanLunas - totalPengeluaran;
+
+    return { totalPenjualan, totalProfit, totalPiutang, totalBelanja, biayaOperasional, totalGaji, saldoKas };
+  }, [sales, expenses]);
+
+  // 3. HANDLER EDIT & HAPUS
+  const handleOpenModal = (item = null) => {
+    if (item) {
+      setEditingId(item.id);
+      setFormData({ customer: item.customer, item: item.item, total: item.total, status: item.status });
+    } else {
+      setEditingId(null);
+      setFormData({ customer: '', item: '', total: '', status: 'Belum Lunas' });
+    }
+    setIsModalOpen(true);
   };
 
-  const handleUnpayDebt = (id: number) => {
-    setSales(sales.map(s => s.id === id ? { ...s, paid: 0, debt: s.total, status: "Belum Lunas" } : s));
+  const handleSave = (e) => {
+    e.preventDefault();
+    if (editingId) {
+      setSales(sales.map(s => s.id === editingId ? { ...s, ...formData, total: Number(formData.total) } : s));
+    } else {
+      setSales([...sales, { id: Date.now(), ...formData, total: Number(formData.total) }]);
+    }
+    setIsModalOpen(false);
   };
 
-  const totalSalesAmount = sales.reduce((acc, curr) => acc + curr.total, 0);
-  const totalProfitAmount = sales.reduce((acc, curr) => acc + curr.profit, 0);
-  const totalDebtAmount = sales.reduce((acc, curr) => acc + curr.debt, 0);
-  const totalPurchaseAmount = purchases.reduce((acc, curr) => acc + curr.total, 0);
-  const totalExpenseAmount = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-  const totalPayrollAmount = payrolls.reduce((acc, curr) => acc + curr.totalPay, 0);
-  const totalPaidSales = sales.reduce((acc, curr) => acc + curr.paid, 0);
-  const currentCalculatedBalance = manualBalance + totalPaidSales - totalPurchaseAmount - totalExpenseAmount - totalPayrollAmount;
+  const handleDelete = (id) => {
+    if (confirm('Yakin ingin menghapus transaksi ini? Rumus dasbor akan otomatis dihitung ulang.')) {
+      setSales(sales.filter(s => s.id !== id));
+    }
+  };
+
+  const formatRupiah = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="min-h-screen bg-[#18191a] p-3 md:p-6 font-sans text-slate-100 touch-manipulation">
-      <div className="max-w-7xl mx-auto space-y-6">
-        
-        {/* HEADER */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#242526] p-5 rounded-2xl shadow-xl border border-slate-700/60">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-700 via-amber-600 to-yellow-600 shadow-md flex items-center justify-center p-2.5 text-white font-bold text-xl">
-              📦
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="bg-amber-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded uppercase tracking-wider">ZAYN ERP</span>
-                <h1 className="text-xl md:text-2xl font-black text-white tracking-tight">ZAYN PACKAGING</h1>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5 font-medium">Sistem Manajemen Stok, Keuangan, Komisi & Gaji Karyawan</p>
-            </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-6 space-y-6 font-sans">
+      
+      {/* HEADER & BRANDING */}
+      <header className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-5">
+          {/* Logo 3D Visual */}
+          <div className="w-16 h-16 bg-gradient-to-tr from-amber-500 via-orange-600 to-yellow-400 rounded-2xl flex items-center justify-center shadow-[0_10px_20px_rgba(245,158,11,0.3)] transform -rotate-3 border border-amber-300/40">
+            <PackageCheck className="w-10 h-10 text-slate-950 drop-shadow-md" />
           </div>
-          <div className="bg-[#3a3b3c] text-amber-400 border border-amber-500/30 font-bold px-3.5 py-2 text-xs rounded-xl shadow">
-            🚀 Kerja Cerdas, Rezeki Berkah & Bisnis Terus Berkembang
+          <div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-wider text-white">
+              PACKAGING
+            </h1>
+            <p className="text-xs text-amber-400 font-semibold tracking-wide">SISTEM MANAJEMEN STOK</p>
           </div>
         </div>
 
-        {/* MENU TABS BUTTONS */}
-        <div className="bg-[#242526] border border-slate-700 p-2 rounded-xl flex flex-wrap gap-2 shadow-md">
-          {[
-            { id: "dashboard", label: "📊 Dashboard" },
-            { id: "penjualan", label: "🛒 Penjualan" },
-            { id: "pembelian", label: "📥 Pembelian" },
-            { id: "stok", label: "📦 Stok Gudang" },
-            { id: "pengeluaran", label: "💸 Pengeluaran" },
-            { id: "komisi", label: "👥 Komisi" },
-            { id: "gaji", label: "💵 Gaji & Slip" },
-            { id: "master", label: "⚙️ Master Data" },
-            { id: "report", label: "📈 Report Bulanan" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3.5 py-2 rounded-lg text-xs md:text-sm font-bold transition cursor-pointer ${
-                activeTab === tab.id
-                  ? "bg-amber-600 text-white shadow"
-                  : "text-slate-300 hover:bg-[#3a3b3c]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Teks Keuangan Sampingan & Slogan */}
+        <div className="text-center md:text-right flex flex-col items-center md:items-end justify-center">
+          <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full font-medium mb-1">
+            Keuangan Sampingan
+          </span>
+          <p className="text-sm font-medium bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent italic">
+            "Kerja Cerdas, Rezeki Berkah & Bisnis Terus Berkembang"
+          </p>
+        </div>
+      </header>
+
+      {/* RINGKASAN KARTU DASBOR (Jajar ke Samping / Horizontal Scroll) */}
+      <section className="overflow-x-auto pb-3 scrollbar-thin scrollbar-thumb-slate-700">
+        <div className="flex gap-4 min-w-max">
+          
+          {/* Card: Total Penjualan */}
+          <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
+            <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
+              <span>TOTAL PENJUALAN</span>
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="text-lg font-bold text-white">{formatRupiah(metrics.totalPenjualan)}</div>
+          </div>
+
+          {/* Card: Total Profit */}
+          <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
+            <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
+              <span>TOTAL PROFIT</span>
+              <DollarSign className="w-4 h-4 text-cyan-400" />
+            </div>
+            <div className={`text-lg font-bold ${metrics.totalProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {formatRupiah(metrics.totalProfit)}
+            </div>
+          </div>
+
+          {/* Card: Total Piutang */}
+          <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
+            <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
+              <span>TOTAL PIUTANG</span>
+              <AlertCircle className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="text-lg font-bold text-amber-400">{formatRupiah(metrics.totalPiutang)}</div>
+          </div>
+
+          {/* Card: Total Belanja */}
+          <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
+            <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
+              <span>TOTAL BELANJA</span>
+              <ShoppingBag className="w-4 h-4 text-blue-400" />
+            </div>
+            <div className="text-lg font-bold text-slate-200">{formatRupiah(metrics.totalBelanja)}</div>
+          </div>
+
+          {/* Card: Biaya Operasional */}
+          <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
+            <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
+              <span>BIAYA OPERASIONAL</span>
+              <Receipt className="w-4 h-4 text-rose-400" />
+            </div>
+            <div className="text-lg font-bold text-slate-200">{formatRupiah(metrics.biayaOperasional)}</div>
+          </div>
+
+          {/* Card: Total Gaji */}
+          <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
+            <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
+              <span>TOTAL GAJI</span>
+              <Users className="w-4 h-4 text-purple-400" />
+            </div>
+            <div className="text-lg font-bold text-slate-200">{formatRupiah(metrics.totalGaji)}</div>
+          </div>
+
+          {/* Card: Saldo Kas */}
+          <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
+            <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
+              <span>SALDO KAS</span>
+              <Wallet className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="text-lg font-bold text-emerald-400">{formatRupiah(metrics.saldoKas)}</div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* TABEL PIUTANG & PENJUALAN */}
+      <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-white">Daftar Transaksi & Piutang Customer</h2>
+            <p className="text-xs text-slate-400">Garis pemisah antar transaksi dibuat lebih kontras agar mudah dibedakan</p>
+          </div>
+          <button 
+            onClick={() => handleOpenModal()}
+            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-lg transition"
+          >
+            <PlusCircle className="w-4 h-4" /> Tambah Transaksi
+          </button>
         </div>
 
-        {/* TAB 1: DASHBOARD */}
-        {activeTab === "dashboard" && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
-              <div className="bg-[#242526] border border-slate-700 p-4 rounded-xl shadow">
-                <p className="text-[11px] font-bold text-slate-400 uppercase">Total Penjualan</p>
-                <p className="text-base font-black text-white mt-1">Rp {totalSalesAmount.toLocaleString("id-ID")}</p>
-              </div>
-              <div className="bg-[#242526] border border-emerald-900 p-4 rounded-xl shadow">
-                <p className="text-[11px] font-bold text-emerald-400 uppercase">Total Profit</p>
-                <p className="text-base font-black text-emerald-400 mt-1">Rp {totalProfitAmount.toLocaleString("id-ID")}</p>
-              </div>
-              <div className="bg-[#242526] border border-amber-900 p-4 rounded-xl shadow">
-                <p className="text-[11px] font-bold text-amber-400 uppercase">Total Piutang</p>
-                <p className="text-base font-black text-amber-400 mt-1">Rp {totalDebtAmount.toLocaleString("id-ID")}</p>
-              </div>
-              <div className="bg-[#242526] border border-slate-700 p-4 rounded-xl shadow">
-                <p className="text-[11px] font-bold text-slate-400 uppercase">Total Belanja</p>
-                <p className="text-base font-black text-white mt-1">Rp {totalPurchaseAmount.toLocaleString("id-ID")}</p>
-              </div>
-              <div className="bg-[#242526] border border-orange-900 p-4 rounded-xl shadow">
-                <p className="text-[11px] font-bold text-orange-400 uppercase">Biaya Operasional</p>
-                <p className="text-base font-black text-orange-400 mt-1">Rp {totalExpenseAmount.toLocaleString("id-ID")}</p>
-              </div>
-              <div className="bg-[#242526] border border-rose-900 p-4 rounded-xl shadow">
-                <p className="text-[11px] font-bold text-rose-400 uppercase">Total Gaji</p>
-                <p className="text-base font-black text-rose-400 mt-1">Rp {totalPayrollAmount.toLocaleString("id-ID")}</p>
-              </div>
-              <div className="bg-[#242526] border border-blue-900 p-4 rounded-xl shadow relative">
-                <div className="flex justify-between items-center">
-                  <p className="text-[11px] font-bold text-blue-400 uppercase">Saldo Kas</p>
-                  <button onClick={() => setIsBalanceEditOpen(!isBalanceEditOpen)} className="text-[10px] text-blue-300 underline font-semibold cursor-pointer">Atur</button>
-                </div>
-                <p className="text-base font-black text-blue-400 mt-1">Rp {currentCalculatedBalance.toLocaleString("id-ID")}</p>
-              </div>
-            </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-800/80 text-slate-400 text-xs uppercase">
+              <tr>
+                <th className="p-3">Nama Customer</th>
+                <th className="p-3">Item / Produk</th>
+                <th className="p-3">Total Tagihan</th>
+                <th className="p-3">Status</th>
+                <th className="p-3 text-center">Aksi (Edit / Hapus)</th>
+              </tr>
+            </thead>
+            {/* Divider Border Antar Baris (border-b border-slate-700/80) */}
+            <tbody className="divide-y divide-slate-700/80">
+              {sales.map((item) => (
+                <tr key={item.id} className="hover:bg-slate-800/40 transition">
+                  <td className="p-4 font-semibold text-white">{item.customer}</td>
+                  <td className="p-4 text-slate-300">{item.item}</td>
+                  <td className="p-4 font-bold text-slate-100">{formatRupiah(item.total)}</td>
+                  <td className="p-4">
+                    {item.status === 'Belum Lunas' ? (
+                      <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-full text-xs font-semibold">
+                        <AlertCircle className="w-3.5 h-3.5" /> Belum Lunas
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full text-xs font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Lunas
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => handleOpenModal(item)}
+                        className="p-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-md border border-slate-700 transition"
+                        title="Edit Data"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(item.id)}
+                        className="p-1.5 bg-slate-800 hover:bg-slate-700 text-rose-400 rounded-md border border-slate-700 transition"
+                        title="Hapus Data"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-            {isBalanceEditOpen && (
-              <div className="bg-[#242526] border border-slate-700 p-4 rounded-xl max-w-xs space-y-3">
-                <p className="text-xs font-bold text-white">Input Saldo Awal Kas</p>
-                <input type="number" value={inputBalance} onChange={(e) => setInputBalance(e.target.value)} className="w-full bg-[#18191a] border border-slate-600 rounded p-2 text-xs text-white" />
-                <button onClick={() => { setManualBalance(Number(inputBalance) || 0); setIsBalanceEditOpen(false); }} className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded cursor-pointer">Simpan Saldo</button>
+      {/* MODAL INPUT / REVISI DATA */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-4">
+              {editingId ? 'Revisi / Edit Transaksi' : 'Tambah Transaksi Baru'}
+            </h3>
+            <form onSubmit={handleSave} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">Nama Customer</label>
+                <input 
+                  type="text" 
+                  required
+                  value={formData.customer} 
+                  onChange={(e) => setFormData({...formData, customer: e.target.value})}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500" 
+                />
               </div>
-            )}
-
-            {/* TABEL PIUTANG */}
-            <div className="bg-[#242526] border border-amber-800/80 rounded-xl shadow-md overflow-hidden">
-              <div className="bg-[#2d2e30] p-4 border-b border-amber-900/40 flex flex-row items-center justify-between">
-                <div>
-                  <h2 className="text-sm font-bold text-amber-400">⚠️ Customer yang Masih Punya Hutang (Belum Lunas)</h2>
-                  <p className="text-xs text-amber-400/70">Daftar tagihan aktif.</p>
-                </div>
-                <span className="bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded">
-                  Piutang: Rp {totalDebtAmount.toLocaleString("id-ID")}
-                </span>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">Item Produk</label>
+                <input 
+                  type="text" 
+                  required
+                  value={formData.item} 
+                  onChange={(e) => setFormData({...formData, item: e.target.value})}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500" 
+                />
               </div>
-              <div className="p-4 overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-700 text-slate-400">
-                      <th className="py-2 px-3">Tanggal</th>
-                      <th className="py-2 px-3">Invoice</th>
-                      <th className="py-2 px-3">Customer</th>
-                      <th className="py-2 px-3">Barang</th>
-                      <th className="py-2 px-3">Total Nota</th>
-                      <th className="py-2 px-3">Status / Sisa</th>
-                      <th className="py-2 px-3 text-center">Aksi Cepat</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800">
-                    {sales.map((s) => (
-                      <tr key={s.id} className="hover:bg-[#3a3b3c]/30">
-                        <td className="py-3 px-3 text-slate-400">{s.date}</td>
-                        <td className="py-3 px-3 font-semibold text-white">{s.invoice}</td>
-                        <td className="py-3 px-3 font-bold text-amber-300">{s.customer}</td>
-                        <td className="py-3 px-3 text-slate-300">{s.item} ({s.qty})</td>
-                        <td className="py-3 px-3 text-slate-300">Rp {s.total.toLocaleString("id-ID")}</td>
-                        <td className="py-3 px-3">
-                          {s.status === "Lunas" ? (
-                            <span className="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded font-bold">Lunas</span>
-                          ) : (
-                            <span className="font-extrabold text-rose-400">Rp {s.debt.toLocaleString("id-ID")}</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          {s.status === "Belum Lunas" ? (
-                            <button onClick={() => handlePayDebt(s.id)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded font-bold cursor-pointer">
-                              Tandai Lunas
-                            </button>
-                          ) : (
-                            <button onClick={() => handleUnpayDebt(s.id)} className="border border-rose-600 text-rose-400 hover:bg-rose-950 text-xs px-3 py-1 rounded font-bold cursor-pointer">
-                              Batalkan Lunas
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">Total Tagihan (Rp)</label>
+                <input 
+                  type="number" 
+                  required
+                  value={formData.total} 
+                  onChange={(e) => setFormData({...formData, total: e.target.value})}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500" 
+                />
               </div>
-            </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">Status Pembayaran</label>
+                <select 
+                  value={formData.status}
+                  onChange={(e) => setFormData({...formData, status: e.target.value})}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500"
+                >
+                  <option value="Belum Lunas">Belum Lunas</option>
+                  <option value="Lunas">Lunas</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-4 py-2 rounded-lg"
+                >
+                  Simpan Data
+                </button>
+              </div>
+            </form>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* TAB 2: PENJUALAN */}
-        {activeTab === "penjualan" && (
-          <div className="bg-[#242526] border border-slate-700 p-5 rounded-xl shadow-md space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-700 pb-3">
-              <h2 className="text-base font-bold text-white">🛒 Data Transaksi Penjualan</h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-700 text-slate-400">
-                    <th className="py-2 px-3">Tanggal</th>
-                    <th className="py-2 px-3">Invoice</th>
-                    <th className="py-2 px-3">Customer</th>
-                    <th className="py-2 px-3">Barang</th>
-                    <th className="py-2 px-3">Qty</th>
-                    <th className="py-2 px-3">Total</th>
-                    <th className="py-2 px-3">Profit</th>
-                    <th className="py-2 px-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {sales.map((s) => (
-                    <tr key={s.id} className="hover:bg-[#3a3b3c]/30">
-                      <td className="py-3 px-3 text-slate-400">{s.date}</td>
-                      <td className="py-3 px-3 font-semibold text-white">{s.invoice}</td>
-                      <td className="py-3 px-3 font-bold text-amber-300">{s.customer}</td>
-                      <td className="py-3 px-3 text-slate-300">{s.item}</td>
-                      <td className="py-3 px-3 text-slate-300">{s.qty}</td>
-                      <td className="py-3 px-3 text-slate-300">Rp {s.total.toLocaleString("id-ID")}</td>
-                      <td className="py-3 px-3 font-bold text-emerald-400">Rp {s.profit.toLocaleString("id-ID")}</td>
-                      <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${s.status === 'Lunas' ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'}`}>
-                          {s.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: PEMBELIAN */}
-        {activeTab === "pembelian" && (
-          <div className="bg-[#242526] border border-slate-700 p-5 rounded-xl shadow-md space-y-4">
-            <h2 className="text-base font-bold text-white border-b border-slate-700 pb-3">📥 Data Pembelian Bahan Baku</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-700 text-slate-400">
-                    <th className="py-2 px-3">Tanggal</th>
-                    <th className="py-2 px-3">No. Faktur</th>
-                    <th className="py-2 px-3">Supplier</th>
-                    <th className="py-2 px-3">Barang</th>
-                    <th className="py-2 px-3">Qty</th>
-                    <th className="py-2 px-3">Total Belanja</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {purchases.map((p) => (
-                    <tr key={p.id} className="hover:bg-[#3a3b3c]/30">
-                      <td className="py-3 px-3 text-slate-400">{p.date}</td>
-                      <td className="py-3 px-3 font-semibold text-white">{p.invoice}</td>
-                      <td className="py-3 px-3 text-amber-300">{p.supplier}</td>
-                      <td className="py-3 px-3 text-slate-300">{p.item}</td>
-                      <td className="py-3 px-3 text-slate-300">{p.qty}</td>
-                      <td className="py-3 px-3 font-bold text-white">Rp {p.total.toLocaleString("id-ID")}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: STOK GUDANG */}
-        {activeTab === "stok" && (
-          <div className="bg-[#242526] border border-slate-700 p-5 rounded-xl shadow-md space-y-4">
-            <h2 className="text-base font-bold text-white border-b border-slate-700 pb-3">📦 Stok Master Kayu & Material</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-700 text-slate-400">
-                    <th className="py-2 px-3">Nama Barang</th>
-                    <th className="py-2 px-3">Harga Beli</th>
-                    <th className="py-2 px-3">Harga Jual</th>
-                    <th className="py-2 px-3">Satuan</th>
-                    <th className="py-2 px-3">Sisa Stok</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {masterItems.map((m) => (
-                    <tr key={m.id} className="hover:bg-[#3a3b3c]/30">
-                      <td className="py-3 px-3 font-bold text-white">{m.name}</td>
-                      <td className="py-3 px-3 text-slate-300">Rp {m.buyPrice.toLocaleString("id-ID")}</td>
-                      <td className="py-3 px-3 text-slate-300">Rp {m.sellPrice.toLocaleString("id-ID")}</td>
-                      <td className="py-3 px-3 text-slate-400">{m.unit}</td>
-                      <td className="py-3 px-3 font-extrabold text-amber-400 text-sm">{m.stock} {m.unit}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5: PENGELUARAN */}
-        {activeTab === "pengeluaran" && (
-          <div className="bg-[#242526] border border-slate-700 p-5 rounded-xl shadow-md space-y-4">
-            <h2 className="text-base font-bold text-white border-b border-slate-700 pb-3">💸 Biaya Operasional Harian</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-700 text-slate-400">
-                    <th className="py-2 px-3">Tanggal</th>
-                    <th className="py-2 px-3">Keterangan</th>
-                    <th className="py-2 px-3">Kategori</th>
-                    <th className="py-2 px-3">Nominal</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {expenses.map((e) => (
-                    <tr key={e.id} className="hover:bg-[#3a3b3c]/30">
-                      <td className="py-3 px-3 text-slate-400">{e.date}</td>
-                      <td className="py-3 px-3 text-white font-medium">{e.desc}</td>
-                      <td className="py-3 px-3 text-amber-300">{e.category}</td>
-                      <td className="py-3 px-3 font-bold text-orange-400">Rp {e.amount.toLocaleString("id-ID")}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB LAINNYA (KOMISI, GAJI, MASTER, REPORT) */}
-        {["komisi", "gaji", "master", "report"].includes(activeTab) && (
-          <div className="bg-[#242526] border border-slate-700 p-8 rounded-xl text-center space-y-4">
-            <h2 className="text-lg font-bold text-white capitalize">Menu {activeTab} Zayn Packaging</h2>
-            <p className="text-xs text-slate-400">Data rekapitulasi operasional dan finansial untuk menu ini tersinkronisasi otomatis.</p>
-            <button onClick={() => setActiveTab("dashboard")} className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded cursor-pointer">
-              Kembali ke Dashboard Utama
-            </button>
-          </div>
-        )}
-
-      </div>
     </div>
   );
 }
