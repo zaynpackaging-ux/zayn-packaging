@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 
 export default function DashboardZayn() {
-  // 1. STATE DATA TRANSAKSI
   const [sales, setSales] = useState([
     { id: 1, customer: 'PT Mitra Mulia', item: 'Palet Kayu Custom', total: 4500000, status: 'Belum Lunas' },
     { id: 2, customer: 'Toko Sumber Jaya', item: 'Bubble Column 50m', total: 1200000, status: 'Lunas' },
@@ -30,12 +29,10 @@ export default function DashboardZayn() {
     gaji: 2800000
   });
 
-  // State Form Modal (Tambah/Edit)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ customer: '', item: '', total: '', status: 'Belum Lunas' });
 
-  // 2. KALKULASI RUMUS OTOMATIS
   const metrics = useMemo(() => {
     const totalPenjualan = sales.reduce((acc, curr) => acc + Number(curr.total), 0);
     const totalPiutang = sales.filter(s => s.status === 'Belum Lunas').reduce((acc, curr) => acc + Number(curr.total), 0);
@@ -52,7 +49,6 @@ export default function DashboardZayn() {
     return { totalPenjualan, totalProfit, totalPiutang, totalBelanja, biayaOperasional, totalGaji, saldoKas };
   }, [sales, expenses]);
 
-  // 3. HANDLER EDIT & HAPUS
   const handleOpenModal = (item = null) => {
     if (item) {
       setEditingId(item.id);
@@ -88,7 +84,6 @@ export default function DashboardZayn() {
       {/* HEADER & BRANDING */}
       <header className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-5">
-          {/* Logo 3D Visual */}
           <div className="w-16 h-16 bg-gradient-to-tr from-amber-500 via-orange-600 to-yellow-400 rounded-2xl flex items-center justify-center shadow-[0_10px_20px_rgba(245,158,11,0.3)] transform -rotate-3 border border-amber-300/40">
             <PackageCheck className="w-10 h-10 text-slate-950 drop-shadow-md" />
           </div>
@@ -100,7 +95,6 @@ export default function DashboardZayn() {
           </div>
         </div>
 
-        {/* Teks Keuangan Sampingan & Slogan */}
         <div className="text-center md:text-right flex flex-col items-center md:items-end justify-center">
           <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full font-medium mb-1">
             Keuangan Sampingan
@@ -111,11 +105,9 @@ export default function DashboardZayn() {
         </div>
       </header>
 
-      {/* RINGKASAN KARTU DASBOR (Horizontal Scroll) */}
-      <section className="overflow-x-auto pb-3 scrollbar-thin scrollbar-thumb-slate-700">
+      {/* RINGKASAN KARTU DASBOR (Horizontal) */}
+      <section className="overflow-x-auto pb-3">
         <div className="flex gap-4 min-w-max">
-          
-          {/* Card: Total Penjualan */}
           <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
             <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
               <span>TOTAL PENJUALAN</span>
@@ -124,7 +116,6 @@ export default function DashboardZayn() {
             <div className="text-lg font-bold text-white">{formatRupiah(metrics.totalPenjualan)}</div>
           </div>
 
-          {/* Card: Total Profit */}
           <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
             <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
               <span>TOTAL PROFIT</span>
@@ -135,7 +126,6 @@ export default function DashboardZayn() {
             </div>
           </div>
 
-          {/* Card: Total Piutang */}
           <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
             <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
               <span>TOTAL PIUTANG</span>
@@ -144,7 +134,6 @@ export default function DashboardZayn() {
             <div className="text-lg font-bold text-amber-400">{formatRupiah(metrics.totalPiutang)}</div>
           </div>
 
-          {/* Card: Total Belanja */}
           <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
             <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
               <span>TOTAL BELANJA</span>
@@ -153,7 +142,6 @@ export default function DashboardZayn() {
             <div className="text-lg font-bold text-slate-200">{formatRupiah(metrics.totalBelanja)}</div>
           </div>
 
-          {/* Card: Biaya Operasional */}
           <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
             <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
               <span>BIAYA OPERASIONAL</span>
@@ -162,7 +150,6 @@ export default function DashboardZayn() {
             <div className="text-lg font-bold text-slate-200">{formatRupiah(metrics.biayaOperasional)}</div>
           </div>
 
-          {/* Card: Total Gaji */}
           <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
             <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
               <span>TOTAL GAJI</span>
@@ -171,7 +158,6 @@ export default function DashboardZayn() {
             <div className="text-lg font-bold text-slate-200">{formatRupiah(metrics.totalGaji)}</div>
           </div>
 
-          {/* Card: Saldo Kas */}
           <div className="w-60 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
             <div className="flex justify-between items-center text-slate-400 text-xs font-semibold mb-2">
               <span>SALDO KAS</span>
@@ -179,7 +165,6 @@ export default function DashboardZayn() {
             </div>
             <div className="text-lg font-bold text-emerald-400">{formatRupiah(metrics.saldoKas)}</div>
           </div>
-
         </div>
       </section>
 
@@ -209,7 +194,6 @@ export default function DashboardZayn() {
                 <th className="p-3 text-center">Aksi (Edit / Hapus)</th>
               </tr>
             </thead>
-            {/* Divider Border Antar Baris Transaksi */}
             <tbody className="divide-y divide-slate-700/80">
               {sales.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-800/40 transition">
