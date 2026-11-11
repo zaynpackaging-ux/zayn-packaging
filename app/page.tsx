@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import { 
   PlusCircle, 
@@ -22,7 +24,7 @@ export default function DashboardZayn() {
     { id: 3, customer: 'CV Agung Logistik', item: 'Peti Kayu Ekspor', total: 3800000, status: 'Belum Lunas' }
   ]);
 
-  const [expenses, setExpenses] = useState({
+  const [expenses] = useState({
     belanja: 3200000,
     operasional: 1500000,
     gaji: 2800000
@@ -109,7 +111,7 @@ export default function DashboardZayn() {
         </div>
       </header>
 
-      {/* RINGKASAN KARTU DASBOR (Jajar ke Samping / Horizontal Scroll) */}
+      {/* RINGKASAN KARTU DASBOR (Horizontal Scroll) */}
       <section className="overflow-x-auto pb-3 scrollbar-thin scrollbar-thumb-slate-700">
         <div className="flex gap-4 min-w-max">
           
@@ -207,7 +209,7 @@ export default function DashboardZayn() {
                 <th className="p-3 text-center">Aksi (Edit / Hapus)</th>
               </tr>
             </thead>
-            {/* Divider Border Antar Baris (border-b border-slate-700/80) */}
+            {/* Divider Border Antar Baris Transaksi */}
             <tbody className="divide-y divide-slate-700/80">
               {sales.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-800/40 transition">
